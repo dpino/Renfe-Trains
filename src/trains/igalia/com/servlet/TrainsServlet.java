@@ -29,36 +29,61 @@ public class TrainsServlet extends HttpServlet {
 		return sdf.format(new Date());
 	}
 	
+	private static final String JSON = "json";
+	
+	private static final String XML = "xml";
+	
 	@Override
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws IOException {
 		
 		String origin = req.getParameter("origin");
 		String destination = req.getParameter("destination");
-		String date = req.getParameter("date");		// Format ISO 8601
+		String date = req.getParameter("date");					// Format ISO 8601		
+		String output = req.getParameter("output");
+		
+		if (output == null) {
+			output = XML;
+		}
+		output = output.toLowerCase();		
+		
+		PrintWriter out = resp.getWriter();
+		
+		if (origin == null || origin.isEmpty()) {
+			resp.setContentType("text/html");
+			out.println("Parameter 'origin' is missing");
+			return;
+		}
+		
+		if (destination == null || destination.isEmpty()) {
+			resp.setContentType("text/html");
+			out.println("Parameter 'destination' is missing");
+			return;
+		}
 		
 		RenfeXHR xhr = (new RenfeXHR()).origin(origin).destination(destination);
 		if (date != null) {
 			xhr.date(date);
 		}
-		
+	
 		try {
 			xhr.execute();
 			ScheduleParser parser = new ScheduleParser();
 			parser.parseHTML(xhr.getResponseAsStream());
-			System.out.println("Response: " + parser.getResponseXML());
 			
-			// Write response
-			resp.setContentType("text/xml");
-		    PrintWriter out = resp.getWriter();
-		    out.println(parser.getResponseXML());
-		    			
+			// Write response			
+			if (JSON.equals(output)) {
+				resp.setContentType("application/json");				
+			    out.println(parser.getResponseJSON());				
+			}
+			if (XML.equals(output)) {
+				resp.setContentType("text/xml");
+			    out.println(parser.getResponseXML());				
+			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		
-		
+		}	
 		
 //		System.out.printf("trainsservlet (GET): %s, %s, %s", origin, destination, date);
 	}
