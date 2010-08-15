@@ -1,0 +1,84 @@
+<!doctype html>
+<!-- The DOCTYPE declaration above will set the    -->
+<!-- browser's rendering engine into               -->
+<!-- "Standards Mode". Replacing this declaration  -->
+<!-- with a "Quirks Mode" doctype may lead to some -->
+<!-- differences in layout.                        -->
+
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+    <!--                                                               -->
+    <!-- Consider inlining CSS to reduce the number of requested files -->
+    <!--                                                               -->
+    <link type="text/css" rel="stylesheet" href="Trains.css">
+
+    <!--                                           -->
+    <!-- Any title is fine                         -->
+    <!--                                           -->
+    <title>Spain's Railway System (RENFE) Timetable Querying</title>
+
+    <!--                                           -->
+    <!-- This script loads your compiled module.   -->
+    <!-- If you add any GWT meta tags, they must   -->
+    <!-- be added before this line.                -->
+    <!--                                           -->
+    <script type="text/javascript" language="javascript" src="trains/trains.nocache.js"></script>
+  </head>
+
+  <!--                                           -->
+  <!-- The body can have arbitrary html, or      -->
+  <!-- you can leave the body empty if you want  -->
+  <!-- to create a completely dynamic UI.        -->
+  <!--                                           -->
+  <body style="text-align: center">
+	<h1>Query Renfe Trains</h1>
+
+	<center>
+		<p style="width: 600px; text-align=center">
+		This is a small experiment I coded basically for playing and learning about <a href="http://code.google.com/appengine/">Google Application Engine</a>. It was inspired by <a href="http://diego.goberna.net/trenes/">Trenes</a>, an iphone app built by an old friend of mine :) This web app lets you query the Spanish Railway System (Renfe) time schedule, searching timetables by origin-destination and date. Results are queried via <a href="http://www.renfe.es">Renfe website</a>. This service comes with NO WARRANTY. Please, use <a href="http://www.renfe.com/viajeros/index.html">Renfe website</a> instead.
+		</p>
+	</center>
+
+	<div style="background: #ffee33">
+		<dl>
+			<dt>
+				Trains from <i>Vigo</i> to <i>Ourense</i> leaving today (output <b>XML</b>)
+			</dt>
+			<dd>
+				http://pinowsky.appspot.com/trains?origin=vigo&destination=ourense
+			</dd>
+		</dl>
+		<dl>
+			<dt>
+				Trains from <i>Vigo</i> to <i>A Coruña</i> leaving tomorrow (output <b>XML</b>)
+			</dt>
+			<dd>
+				http://pinowsky.appspot.com/trains?origin=vigo&destination=a coruña&date=tomorrow
+			</dd>
+		</dl>
+		<dl>
+			<dt>
+				Trains from <i>Vigo</i> to <i>Madrid</i> today (output <b>JSON</b>)
+			</dt>
+			<dd>
+				http://pinowsky.appspot.com/trains?origin=vigo&destination=madrid&output=json
+			</dd>
+		</dl>
+		<dl>
+			<dt>
+				Trains from <i>Vigo</i> to <i>Barcelona</i> leaving on 1st of September 2010 (output <b>JSON</b>)
+			</dt>
+			<dd>
+				http://pinowsky.appspot.com/trains?origin=vigo&destination=barcelona&date=2010-09-01&output=json
+			</dd>
+		</dl>
+	</div>
+
+	<div style="font-size: small">
+		<p>Diego Pino <a href="mailto:pinowsky@gmail.com">&lt;pinowsky@gmail.com&gt;</a></p>
+	</div>
+  </body>
+
+</html>
