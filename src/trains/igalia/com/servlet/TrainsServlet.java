@@ -15,9 +15,11 @@ import trains.igalia.com.services.RenfeXHR;
 
 public class TrainsServlet extends HttpServlet {
 
-	private static final Logger log = Logger.getLogger(TrainsServlet.class.getName());
+	private static final Logger log = Logger.getLogger(TrainsServlet.class
+			.getName());
 
-	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd");
+	private static final SimpleDateFormat sdf = new SimpleDateFormat(
+			"yyyy-mm-dd");
 
 	private static final String JSON = "json";
 
@@ -29,12 +31,12 @@ public class TrainsServlet extends HttpServlet {
 
 	/**
 	 * Uppercase str and remove accents
-	 *
+	 * 
 	 * @param str
 	 * @return
 	 */
 	private String normalize(String str) {
-		return removeAccents(str.toUpperCase());
+		return str != null ? removeAccents(str.toUpperCase()) : null;
 	}
 
 	private String removeAccents(String str) {
@@ -55,7 +57,9 @@ public class TrainsServlet extends HttpServlet {
 
 		String origin = req.getParameter("origin");
 		String destination = req.getParameter("destination");
-		String date = req.getParameter("date");					// Format ISO 8601
+		String originCode = req.getParameter("originCode");
+		String destinationCode = req.getParameter("destinationCode");
+		String date = req.getParameter("date"); // Format ISO 8601
 		String output = req.getParameter("output");
 
 		origin = normalize(origin);
@@ -68,19 +72,33 @@ public class TrainsServlet extends HttpServlet {
 
 		PrintWriter out = resp.getWriter();
 
-		if (origin == null || origin.isEmpty()) {
+		// Check required parameters
+		if (origin == null && originCode == null) {
 			resp.setContentType("text/html");
-			out.println("Parameter 'origin' is missing");
+			out.println("Please, specify parameter 'origin' or 'originCode'");
 			return;
 		}
 
-		if (destination == null || destination.isEmpty()) {
+		if (destination == null && destinationCode == null) {
 			resp.setContentType("text/html");
-			out.println("Parameter 'destination' is missing");
+			out.println("Please, specify parameter 'destination' or 'destinationCode'");
 			return;
 		}
 
-		RenfeXHR xhr = (new RenfeXHR()).origin(origin).destination(destination);
+		// Prepare query
+		RenfeXHR xhr = new RenfeXHR();
+		if (origin != null) {
+			xhr.origin(origin);
+		}
+		if (destination != null) {
+			xhr.destination(destination);
+		}
+		if (originCode != null) {
+			xhr.originCode(originCode);
+		}
+		if (destinationCode != null) {
+			xhr.destinationCode(destinationCode);
+		}
 		if (date != null) {
 			xhr.date(date);
 		}
@@ -93,11 +111,11 @@ public class TrainsServlet extends HttpServlet {
 			// Write response
 			if (JSON.equals(output)) {
 				resp.setContentType("application/json");
-			    out.println(parser.getResponseJSON());
+				out.println(parser.getResponseJSON());
 			}
 			if (XML.equals(output)) {
 				resp.setContentType("text/xml");
-			    out.println(parser.getResponseXML());
+				out.println(parser.getResponseXML());
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
