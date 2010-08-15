@@ -12,34 +12,35 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-
-import com.gargoylesoftware.htmlunit.util.UrlUtils;
+import org.joda.time.LocalDate;
 
 public class RenfeXHR {
 
-	private static final String URL = "http://horarios.renfe.com/HIRRenfeWeb/buscar.do?O=%%%ORIGIN%%%&D=%%%DESTINATION%%%&AF=%%%YEAR%%%&MF=%%%MONTH%%%&DF=%%%DATE%%%&SF=3&ID=s";
+	private static final String URL = "http://horarios.renfe.com/HIRRenfeWeb/buscar.do?O=%%%ORIGIN%%%&D=%%%DESTINATION%%%&AF=%%%YEAR%%%&MF=%%%MONTH%%%&DF=%%%DATE%%%";
+
+	private final LocalDate TODAY = new org.joda.time.LocalDate();
 
 	private static Map<String, String> cityCodes = new HashMap<String, String>();
-	
+
 	private InputStream response;
-	
+
 	private String responseAsString;
 
 	private String originCode;
 
 	private String destinationCode;
-		
+
 	private org.joda.time.LocalDate date;
-	
+
 	public RenfeXHR() {
-		
-	}	
-	
+
+	}
+
 	public RenfeXHR originCode(String originCode) {
 		this.originCode = originCode;
 		return this;
 	}
-	
+
 	public RenfeXHR destinationCode(String destinationCode) {
 		this.destinationCode = destinationCode;
 		return this;
@@ -49,7 +50,7 @@ public class RenfeXHR {
 		this.date = date;
 		return this;
 	}
-	
+
 	public RenfeXHR origin(String origin) {
 		originCode = getCode(origin.toUpperCase());
 		if (originCode == null) {
@@ -65,47 +66,69 @@ public class RenfeXHR {
 		}
 		return this;
 	}
-	
+
+    private LocalDate fromSpecialDate(String date) {
+		if (Dates.DATEBEFOREYESTERDAY.isEqual(date)) {
+			return TODAY.minusDays(2);
+		} else if (Dates.YESTERDAY.isEqual(date)) {
+			return TODAY.minusDays(1);
+		} else if (Dates.TODAY.isEqual(date)) {
+			return TODAY;
+		} else if (Dates.TOMORROW.isEqual(date)) {
+			return TODAY.plusDays(1);
+		} else if (Dates.DAYAFTERTOMORROW.isEqual(date)) {
+			return TODAY.plusDays(2);
+		}
+
+		return null;
+    }
+
 	public RenfeXHR date(String date) {
+		LocalDate result = fromSpecialDate(date);
+		if (result != null) {
+			this.date = result;
+			return this;
+		}
+
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		try {
 			this.date = new org.joda.time.LocalDate(sdf.parse(date));
 		} catch (ParseException e) {
-			this.date = new org.joda.time.LocalDate();
+			this.date = TODAY;
 			e.printStackTrace();
 		}
 		return this;
 	}
-	
+
 	private String getCode(String city) {
 		return cityCodes.get(city);
 	}
-	
+
 	private String encode(String str) {
 		try {
 			return URLEncoder.encode(str, "UTF-8");
-		} catch (UnsupportedEncodingException e) {			
+		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
 		return str;
 	}
-		
+
 	private String composeURL() throws IllegalArgumentException {
 		String result = URL;
-		
+
 		if (originCode == null || destinationCode == null) {
 			throw new IllegalArgumentException("Origin and destination cannot be null or empty");
 		}
 		result = result.replace("%%%ORIGIN%%%", encode(originCode.toString()));
 		result = result.replace("%%%DESTINATION%%%", encode(destinationCode.toString()));
-		
+
 		if (date == null) {
 			date = new org.joda.time.LocalDate();
 		}
 		result = result.replace("%%%DATE%%%", new Integer(date.getDayOfMonth()).toString());
 		result = result.replace("%%%MONTH%%%", new Integer(date.getMonthOfYear()).toString());
 		result = result.replace("%%%YEAR%%%", new Integer(date.getYear()).toString());
-				
+
 		return result;
 	}
 
@@ -119,24 +142,36 @@ public class RenfeXHR {
 		}
 		return "";
 	}
-	
+
 	public void execute() throws Exception {
 		URL url = new URL(composeURL());
+		System.out.println("URL: " + url);
 		response = url.openStream();
 		responseAsString = null;
-	}	
-	
+	}
+
 	public InputStream getResponseAsStream() throws Exception {
 		return response;
 	}
-	
+
 	public String getResponseAsString() throws Exception {
 		if (responseAsString == null) {
 			responseAsString = toString(response);
 		}
 		return responseAsString;
 	}
-	
+
+	private enum Dates {
+		DATEBEFOREYESTERDAY, YESTERDAY, TODAY, TOMORROW, DAYAFTERTOMORROW;
+
+		public boolean isEqual(String str) {
+			System.out.println("toStr: " + toString().toLowerCase());
+			System.out.println("str: " + str.toLowerCase());
+			return toString().toLowerCase().equals(str.toLowerCase());
+		}
+
+	}
+
 	static {
 		cityCodes.put("A CORUÑA", "31412");
 		cityCodes.put("LA CORUÑA", "31412");
@@ -253,12 +288,12 @@ public class RenfeXHR {
 		cityCodes.put("VALLADOLID CAMPO GRANDE", "10600");
 		cityCodes.put("VIGO", "22303");
 		cityCodes.put("VILLENA", "60902");
-		cityCodes.put("VITORIA/GASTEIZ", "11208");
+		cityCodes.put("VITORIA", "11208");
+		cityCodes.put("GASTEIZ", "11208");
 		cityCodes.put("XÀTIVA", "64100");
 		cityCodes.put("ZAMORA", "30200");
 		cityCodes.put("ZARAGOZA", "ZARAG");
 		cityCodes.put("ZURICH", "85200");
 	}
-	
-}
 
+}
